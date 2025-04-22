@@ -10,7 +10,7 @@ df_query = pd.read_csv(PATH_QUERY_DATA, sep = '\t')
 df_collection = pd.read_pickle(PATH_COLLECTION_DATA)
 
 
-sample_collection = df_collection[:5]
+sample_collection = df_collection[:20]
 sample_query = df_query[:5]
 
 logging.basicConfig(level=logging.DEBUG)

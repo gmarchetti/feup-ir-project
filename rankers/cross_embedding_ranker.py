@@ -1,3 +1,4 @@
+import itertools
 import random
 import numpy as np
 import pandas as pd
@@ -14,38 +15,50 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
+BATCH_SIZE = 10
+
 class CrossRanker:
 
     def preprocess_function(self, query, examples):
         full_str = "[CLS]"
         full_str += query
         
-        # print(examples)
-        
         for key in ["authors", "title", "abstract", "journal"]:
             if examples[key] != None:
                 full_str += "[SEP] " + str(examples[key])
         
-        return self.__tokenizer(full_str, padding="max_length", max_length=512, truncation=True, return_tensors="pt").to("cuda")
+        return full_str
+        # return self.__tokenizer(full_str, padding="max_length", max_length=512, truncation=True, return_tensors="pt").to("cuda")
 
-    def score_doc_for_query(self, query, doc):
-        with torch.no_grad():
-            tokenized_query = self.preprocess_function(query, doc)
-            logits = self.__model(**tokenized_query).logits[0][1].item()
+    # def score_doc_for_query(self, query, doc):
+    #     with torch.no_grad():
+    #         tokenized_query = self.preprocess_function(query, doc)
+    #         logits = self.__model(**tokenized_query).logits[0][1].item()
         
-        return logits
+    #     return logits
 
     def get_scores(self, query, corpus):
+        query_list = []
+        scores = []
 
-        scores = corpus.apply(lambda x: self.score_doc_for_query(query, x), axis=1)
+        for idx, row in corpus.iterrows():
+            query_list.append(self.preprocess_function(query, row))
 
-        self.__logger.debug(scores.head())
-
-        return scores
+        for batch in itertools.batched(query_list, BATCH_SIZE):
+            tokenized_list = self.__tokenizer(batch, padding="max_length", max_length=512, truncation=True, return_tensors="pt").to("cuda")
+            with torch.no_grad():
+                outputs = self.__model(**tokenized_list)
+            
+            for logit in outputs.logits:
+                logit_value = logit[1].item()
+                self.__logger.debug(logit_value)
+                scores.append(logit_value)
+        
+        return np.array(scores)
 
     def __init__(self):
         self.__model = AutoModelForSequenceClassification.from_pretrained("models/cross-embedding/checkpoint-2138", num_labels=2).to("cuda")
         self.__tokenizer = AutoTokenizer.from_pretrained("allenai/scibert_scivocab_cased")
 
-        self.__logger = logging.getLogger("CrossRanker")
-        self.__logger.setLevel(logging.DEBUG)
+        self.__logger = logging.getLogger(__name__)
+        self.__logger.setLevel(logging.INFO)
