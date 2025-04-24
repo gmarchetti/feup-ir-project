@@ -28,14 +28,6 @@ class CrossRanker:
                 full_str += "[SEP] " + str(examples[key])
         
         return full_str
-        # return self.__tokenizer(full_str, padding="max_length", max_length=512, truncation=True, return_tensors="pt").to("cuda")
-
-    # def score_doc_for_query(self, query, doc):
-    #     with torch.no_grad():
-    #         tokenized_query = self.preprocess_function(query, doc)
-    #         logits = self.__model(**tokenized_query).logits[0][1].item()
-        
-    #     return logits
 
     def get_scores(self, query, corpus):
         query_list = []
@@ -56,8 +48,8 @@ class CrossRanker:
         
         return np.array(scores)
 
-    def __init__(self):
-        self.__model = AutoModelForSequenceClassification.from_pretrained("models/cross-embedding/checkpoint-2138", num_labels=2).to("cuda")
+    def __init__(self, model_name):
+        self.__model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2).to("cuda")
         self.__tokenizer = AutoTokenizer.from_pretrained("allenai/scibert_scivocab_cased")
 
         self.__logger = logging.getLogger(__name__)
