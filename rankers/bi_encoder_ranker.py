@@ -18,9 +18,6 @@ BATCH_SIZE = 10
 class BiEncoderRanker:
 
     def get_scores(self, query):
-        query_list = []
-        scores = []
-
         query_embedding = self.__model.encode(query, convert_to_tensor=True, show_progress_bar=False)
         
         sim_scores = self.__model.similarity(query_embedding, self.__corpus_embedding)
