@@ -11,7 +11,7 @@ from datasets import load_dataset, ClassLabel
 import evaluate
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 BATCH_SIZE = 10
 
