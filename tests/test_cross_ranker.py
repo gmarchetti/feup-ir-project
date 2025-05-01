@@ -3,8 +3,8 @@ import pandas as pd
 import os
 from rankers.cross_embedding_ranker import CrossRanker
 
-PATH_COLLECTION_DATA = '/home/guilherme/workspace/feup-ir-project/data/subtask_4b/subtask4b_collection_data.pkl'
-PATH_QUERY_DATA = '/home/guilherme/workspace/feup-ir-project/data/subtask_4b/subtask4b_query_tweets.tsv'
+PATH_COLLECTION_DATA = 'data/subtask_4b/subtask4b_collection_data.pkl'
+PATH_QUERY_DATA = 'data/dev-tweets/subtask4b_query_tweets_dev.tsv'
 
 df_query = pd.read_csv(PATH_QUERY_DATA, sep = '\t')
 df_collection = pd.read_pickle(PATH_COLLECTION_DATA)
