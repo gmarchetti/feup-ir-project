@@ -84,7 +84,7 @@ class GemmaRanker:
         return sorted_uids
 
     def __init__(self):
-        self.__pipe = pipeline("text-generation", model="google/gemma-3-1b-it", device="cuda", torch_dtype=torch.bfloat16)
+        self.__pipe = pipeline("text-generation", model="google/gemma-3-4b-it", device="cuda", torch_dtype=torch.bfloat16)
         
         self.__logger = logging.getLogger(__name__)
         self.__logger.setLevel(logging.DEBUG)
