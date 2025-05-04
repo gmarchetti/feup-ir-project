@@ -19,7 +19,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 def build_prompt(query, doc1, doc2):
-    prompt =  f"You are a science researcher. Compare the documents A and B in relation with provided short text. You should output 1 with document A is more relevant and -1 otherwise. \nText: {query}\nDoc A: {doc1}\nDoc B:{doc2}.\nAnswer:"
+    prompt =  f"You are a science researcher. Compare documents A and B in relation to the provided short text. You should output 1 if document A is more relevant and -1 otherwise. \nText: {query}\nDoc A: {doc1}\nDoc B:{doc2}.\nAnswer:"
     messages = [
         {"role": "user", "content": prompt}
     ]
