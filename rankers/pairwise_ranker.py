@@ -19,13 +19,26 @@ logging.basicConfig(level=logging.DEBUG)
 
 class PairwiseRanker:
 
-    def preprocess_function(self, query, abs1, abs2):
-        full_str = f"[CLS] {query} [SEP] {abs1} [SEP] {abs2}"
+    def preprocess_function(self, query, doc1, doc2):
+        paper_data = "{authors} [SEP] {title} [SEP] {journal} [SEP] {abstract}"
+
+        doc1_data = paper_data.format(authors=doc1["authors"],
+                                           title=doc1["title"],
+                                           journal=doc1["journal"],
+                                           abstract=doc1["abstract"],
+                                           )
+        doc2_data = paper_data.format(authors=doc2["authors"],
+                                           title=doc2["title"],
+                                           journal=doc2["journal"],
+                                           abstract=doc2["abstract"],
+                                           )
+
+        full_str = f"[CLS] {query} [SEP] {doc1_data} [SEP] {doc2_data}"
             
         return self.__tokenizer(full_str, padding="max_length", truncation=True, return_tensors='pt')
 
     def compare(self, query, doc1, doc2):
-        message = self.preprocess_function(query, doc1["abstract"], doc2["abstract"]).to('cuda')
+        message = self.preprocess_function(query, doc1, doc2).to('cuda')
 
         with torch.no_grad():
             logits = self.__model(**message).logits
@@ -34,6 +47,41 @@ class PairwiseRanker:
         # print(f"Predicted class id: {predicted_class_id}")
         return predicted_class_id - 1
 
+    def get_higher_rel_prob(self, query, doc1, doc2):
+        message = self.preprocess_function(query, doc1, doc2).to('cuda')
+
+        with torch.no_grad():
+            logits = self.__model(**message).logits[0]
+        
+        # print(f"Predicted class id: {predicted_class_id}")
+        return logits[0].item()
+
+
+    def rank_avg_prob(self, query, docs):
+        # print(docs)
+        collection_as_dict = docs.to_dict('index')
+        doc_index_list = list(collection_as_dict.keys())
+        scores = []
+        cord_uids = []
+        for idx in doc_index_list:
+            cord_uid = collection_as_dict[idx]["cord_uid"]
+            doc1 = collection_as_dict[idx]
+            other_docs = docs[docs["cord_uid"] != cord_uid]
+            probs = other_docs.apply(lambda doc2: self.get_higher_rel_prob(query, doc1, doc2), axis = 1)
+
+            scores.append(probs.mean())
+            cord_uids.append(cord_uid)
+            # print(f"{cord_uids[-1]} score: {scores[-1]}")
+
+
+        sorted_uid = pd.DataFrame({
+            "cord_uids" : cord_uids,
+            "scores" : scores
+        }).sort_values(by=["scores"], ascending=False)
+
+        return sorted_uid["cord_uids"].tolist()
+
+        
     def sort_cached_bubble(self, query, docs):
         collection_as_dict = docs.to_dict('index')
         doc_index_list = list(collection_as_dict.keys())
