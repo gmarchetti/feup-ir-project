@@ -31,7 +31,7 @@ class PairwiseRanker:
             logits = self.__model(**message).logits
             predicted_class_id = logits.argmax().item()
 
-        print(f"Predicted class id: {predicted_class_id}")
+        # print(f"Predicted class id: {predicted_class_id}")
         return predicted_class_id - 1
 
     def sort_cached_bubble(self, query, docs):
