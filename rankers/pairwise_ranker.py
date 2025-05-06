@@ -37,7 +37,7 @@ class PairwiseRanker:
             
         return self.__tokenizer(full_str, padding="max_length", truncation=True, return_tensors='pt')
 
-    def get_higher_rel_prob(self, query, doc1, doc2, cache):
+    def get_higher_rel_prob(self, query, doc1, doc2, cache={}):
         doc1_uid = doc1["cord_uid"]
         doc2_uid = doc2["cord_uid"]
 
@@ -52,6 +52,8 @@ class PairwiseRanker:
         
         doc1gt2 = logits[0].item()
         doc2gt1 = logits[1].item()
+
+        # print(doc1gt2, doc2gt1)
 
         cache.get(doc1_uid, {})[doc2_uid] = doc1gt2
         cache.get(doc2_uid, {})[doc1_uid] = doc2gt1
@@ -77,7 +79,7 @@ class PairwiseRanker:
 
             scores.append(probs.mean())
             cord_uids.append(cord_uid)
-            # print(f"{cord_uids[-1]} score: {scores[-1]}")
+            print(f"{cord_uids[-1]} score: {scores[-1]}")
 
 
         sorted_uid = pd.DataFrame({
