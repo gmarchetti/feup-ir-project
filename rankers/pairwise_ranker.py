@@ -47,14 +47,27 @@ class PairwiseRanker:
         # print(f"Predicted class id: {predicted_class_id}")
         return predicted_class_id - 1
 
-    def get_higher_rel_prob(self, query, doc1, doc2):
+    def get_higher_rel_prob(self, query, doc1, doc2, cache):
+        doc1_uid = doc1["cord_uid"]
+        doc2_uid = doc2["cord_uid"]
+
+        if doc1_uid in (cache.keys()):
+            if doc2_uid in cache[doc1_uid].keys():
+                return cache[doc1_uid][doc2_uid]
+
         message = self.preprocess_function(query, doc1, doc2).to('cuda')
 
         with torch.no_grad():
             logits = self.__model(**message).logits[0]
         
+        doc1gt2 = logits[0].item()
+        doc2gt1 = logits[1].item()
+
+        cache.get(doc1_uid, {})[doc2_uid] = doc1gt2
+        cache.get(doc2_uid, {})[doc1_uid] = doc2gt1
+
         # print(f"Predicted class id: {predicted_class_id}")
-        return logits[0].item()
+        return doc1gt2
 
 
     def rank_avg_prob(self, query, docs):
@@ -63,11 +76,14 @@ class PairwiseRanker:
         doc_index_list = list(collection_as_dict.keys())
         scores = []
         cord_uids = []
+
+        cached_result = {}
+
         for idx in doc_index_list:
             cord_uid = collection_as_dict[idx]["cord_uid"]
             doc1 = collection_as_dict[idx]
             other_docs = docs[docs["cord_uid"] != cord_uid]
-            probs = other_docs.apply(lambda doc2: self.get_higher_rel_prob(query, doc1, doc2), axis = 1)
+            probs = other_docs.apply(lambda doc2: self.get_higher_rel_prob(query, doc1, doc2, cached_result), axis = 1)
 
             scores.append(probs.mean())
             cord_uids.append(cord_uid)
@@ -101,7 +117,7 @@ class PairwiseRanker:
                 cached_response[doc1_idx][doc2_idx] = comparison_result
                 cached_response[doc2_idx][doc1_idx] = -comparison_result
             
-            if comparison_result < 0:
+            if comparison_result > 0:
                 # print("Switch places")
                 temp = doc_index_list[idx+1]
                 doc_index_list[idx+1] = doc_index_list[idx]

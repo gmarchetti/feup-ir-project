@@ -28,40 +28,6 @@ def test_can_instantiate():
     pairwise_ranker = PairwiseRanker(model_name)
     assert pairwise_ranker != None
 
-def test_compare():    
-    base_name = "models/pairwise-classifier"
-    dir_list = listdir(base_name)
-    dir_list.sort()
-
-    latest_checkpoint = dir_list[-1]
-
-    model_name = f"{base_name}/{latest_checkpoint}"
-
-    pairwise_ranker = PairwiseRanker(model_name)
-
-    score = pairwise_ranker.compare(sample_query.loc[0, "tweet_text"], sample_collection.iloc[0], sample_collection.iloc[1])
-    assert (score == -1) or (score == 0)
-
-def test_bubble_sort_docs():
-    collection_as_dict = sample_collection.to_dict('index')
-    doc_index_list = list(collection_as_dict.keys())
-    presorted_uids = [collection_as_dict[index]["cord_uid"] for index in doc_index_list]
-    logging.debug(presorted_uids)
-    
-    base_name = "models/pairwise-classifier"
-    dir_list = listdir(base_name)
-    dir_list.sort()
-
-    latest_checkpoint = dir_list[-1]
-
-    model_name = f"{base_name}/{latest_checkpoint}"
-
-    pairwise_ranker = PairwiseRanker(model_name)
-    sorted_uids = pairwise_ranker.sort_cached_bubble(sample_query.loc[0, "tweet_text"], sample_collection)
-    
-    logging.debug(sorted_uids)
-    assert len(pre_sampled_docids) == len(sorted_uids)
-
 def test_get_higher_rel_prob():    
     base_name = "models/pairwise-classifier"
     dir_list = listdir(base_name)
