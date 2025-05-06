@@ -55,21 +55,27 @@ class PairwiseRanker:
 
         # print(doc1gt2, doc2gt1)
 
-        cache.get(doc1_uid, {})[doc2_uid] = doc1gt2
-        cache.get(doc2_uid, {})[doc1_uid] = doc2gt1
+        doc1_scores = cache.get(doc1_uid, {})
+        doc1_scores[doc2_uid] = doc1gt2
+        cache[doc1_uid] = doc1_scores
+
+        doc2_scores = cache.get(doc2_uid, {})
+        doc2_scores[doc1_uid] = doc2gt1
+        cache[doc2_uid] = doc2_scores
 
         # print(f"Predicted class id: {predicted_class_id}")
         return doc1gt2
 
 
-    def rank_avg_prob(self, query, docs):
+    def rank_avg_prob(self, query, docs, use_cache=True):
         # print(docs)
         collection_as_dict = docs.to_dict('index')
         doc_index_list = list(collection_as_dict.keys())
         scores = []
         cord_uids = []
 
-        cached_result = {}
+        if use_cache:
+            cached_result = {}
 
         for idx in doc_index_list:
             cord_uid = collection_as_dict[idx]["cord_uid"]
@@ -79,7 +85,7 @@ class PairwiseRanker:
 
             scores.append(probs.mean())
             cord_uids.append(cord_uid)
-            print(f"{cord_uids[-1]} score: {scores[-1]}")
+            # print(f"{cord_uids[-1]} score: {scores[-1]}")
 
 
         sorted_uid = pd.DataFrame({

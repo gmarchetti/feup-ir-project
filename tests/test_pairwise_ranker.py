@@ -29,7 +29,7 @@ def test_can_instantiate():
     assert pairwise_ranker != None
 
 def test_get_higher_rel_prob():    
-    base_name = "models/pairwise-classifier"
+    base_name = "models/pairwise-classifier-large"
     dir_list = listdir(base_name)
     dir_list.sort()
 
@@ -49,7 +49,7 @@ def test_rank_avg_prob():
     presorted_uids = [collection_as_dict[index]["cord_uid"] for index in doc_index_list]
     logging.debug(presorted_uids)
     
-    base_name = "models/pairwise-classifier"
+    base_name = "models/pairwise-classifier-large"
     dir_list = listdir(base_name)
     dir_list.sort()
 
