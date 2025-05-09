@@ -12,7 +12,13 @@ def get_avg_gold_in_pred(data, col_gold, col_pred, list_k = [1, 5, 10]):
         d_performance[k] = data["in_topx"].mean()
     return d_performance
 
-def create_pred_file(query_set, prediction_columns):
-    query_set['preds'] = query_set[prediction_columns].apply(lambda x: x[:5])
-    query_set[['post_id', 'preds']].to_csv('predictions.tsv', index=None, sep='\t')
+def create_pred_file(query_set, prediction_columns, prediction_size=5, include_gold=False, base_folder='.'):
+    query_set['preds'] = query_set[prediction_columns].apply(lambda x: x[:prediction_size])
+    
+    columns = ['post_id', 'preds']
+
+    if include_gold:
+        columns.append("cord_uid")
+
+    query_set[columns].to_csv(f'{base_folder}/predictions.tsv', index=None, sep='\t')
     

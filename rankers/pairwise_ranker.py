@@ -32,9 +32,9 @@ class PairwiseRanker:
                                            journal=doc2["journal"],
                                            abstract=doc2["abstract"],
                                            )
-
         full_str = f"[CLS] {query} [SEP] {doc1_data} [SEP] {doc2_data}"
             
+        # print(full_str)
         return self.__tokenizer(full_str, padding="max_length", truncation=True, return_tensors='pt')
 
     def get_higher_rel_prob(self, query, doc1, doc2, cache):
@@ -86,7 +86,7 @@ class PairwiseRanker:
             doc1 = collection_as_dict[idx]
             other_docs = docs[docs["cord_uid"] != cord_uid]
             probs = other_docs.apply(lambda doc2: self.get_higher_rel_prob(query, doc1, doc2, cached_result), axis = 1)
-
+            # print(probs)
             scores.append(probs.mean())
             cord_uids.append(cord_uid)
             # print(f"{cord_uids[-1]} score: {scores[-1]}")
