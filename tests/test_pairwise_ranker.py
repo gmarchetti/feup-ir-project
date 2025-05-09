@@ -39,7 +39,7 @@ def test_get_higher_rel_prob():
 
     pairwise_ranker = PairwiseRanker(model_name)
 
-    score = pairwise_ranker.get_higher_rel_prob(sample_query.loc[0, "tweet_text"], sample_collection.iloc[0], sample_collection.iloc[1])
+    score = pairwise_ranker.get_higher_rel_prob(sample_query.loc[0, "tweet_text"], sample_collection.iloc[0], sample_collection.iloc[1], {})
     assert type(score) is float
 
 def test_rank_avg_prob():
